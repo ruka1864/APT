@@ -64,6 +64,9 @@ Establishes a reverse shell connection to IP:PORT.
 Allows the attacker to remotely execute commands on the victim’s machine.
 Persists by adding itself to the Windows registry (Run Key), ensuring execution every time the system starts.
 
+<img width="1335" height="445" alt="Screenshot From 2026-06-29 09-01-20" src="https://github.com/user-attachments/assets/deabd1f2-03af-4945-acf9-6cdd3829b356" />
+
+
 ## The third stage (Reverse shell by PowerShell)
 
 The final result of this fake CAPTCHA attack is that the attacker gains remote access to the victim's machine through a reverse shell connection. Once the victim unknowingly runs the copied PowerShell command, their system establishes a connection to the attacker's server, allowing remote command execution.
