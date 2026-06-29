@@ -58,7 +58,7 @@ The script automatically copies a PowerShell command to the clipboard.
 If the user follows the instructions and executes the code, it:
 Establishes a reverse shell connection to IP:PORT.
 
-![Screenshot From 2025-02-14 18-05-33](https://github.com/user-attachments/assets/f386c2ef-3d96-474b-90ca-766f6d89a672)
+<img width="1299" height="652" alt="Screenshot From 2026-06-28 06-04-54" src="https://github.com/user-attachments/assets/7e1e9fb0-9451-4ae5-91de-76b758255f23" />
 
 
 Allows the attacker to remotely execute commands on the victim’s machine.
